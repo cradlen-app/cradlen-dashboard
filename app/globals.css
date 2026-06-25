@@ -1,5 +1,11 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-brand-primary: #11604c;
+  --color-brand-secondary: #aab37d;
+  --color-brand-black: #1d1d1b;
+}
+
 :root {
   color-scheme: light;
 }

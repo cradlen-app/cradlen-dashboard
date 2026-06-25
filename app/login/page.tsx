@@ -2,9 +2,17 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Card, Input } from '@/components/ui';
+import Image from 'next/image';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { cn } from '@/lib/cn';
 
 type Step = 'credentials' | 'otp';
+
+const inputClass = cn(
+  'w-full rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-brand-black',
+  'placeholder:text-gray-400 outline-none transition-colors',
+  'focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20',
+);
 
 export default function LoginPage() {
   const router = useRouter();
@@ -12,6 +20,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [code, setCode] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -65,66 +74,149 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-      <Card className="w-full max-w-sm p-8">
-        <div className="mb-6 text-center">
-          <h1 className="text-xl font-semibold">Cradlen Admin</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {step === 'credentials'
-              ? 'Sign in to the platform console'
-              : `Enter the code sent to ${email}`}
-          </p>
-        </div>
+    <div className="flex min-h-screen flex-col bg-white">
+      {/* Header */}
+      <header className="px-6 py-5 sm:px-8">
+        <Image
+          src="/Logo.png"
+          alt="CRADLEN"
+          width={150}
+          height={30}
+          priority
+          className="h-auto w-32 sm:w-36"
+        />
+      </header>
 
-        {error && (
-          <div className="mb-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+      {/* Main */}
+      <main className="flex flex-1 items-center justify-center px-4 py-10">
+        <div className="flex w-full max-w-md flex-col items-center gap-5">
+          <Image
+            src="/Logo-icon.png"
+            alt="Cradlen"
+            width={100}
+            height={100}
+            priority
+          />
 
-        {step === 'credentials' ? (
-          <form onSubmit={submitCredentials} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="admin@cradlen.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <Button type="submit" loading={busy} className="w-full">
-              Continue
-            </Button>
-          </form>
-        ) : (
-          <form onSubmit={submitOtp} className="space-y-4">
-            <Input
-              inputMode="numeric"
-              placeholder="6-digit code"
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
-              maxLength={6}
-              required
-            />
-            <Button type="submit" loading={busy} className="w-full">
-              Verify & sign in
-            </Button>
-            <button
-              type="button"
-              onClick={resend}
-              className="w-full text-center text-sm text-slate-500 hover:text-slate-700"
+          <h1 className="text-2xl font-semibold text-brand-black">
+            {step === 'credentials' ? 'Sign in' : 'Verify your email'}
+          </h1>
+
+          {step === 'otp' && (
+            <p className="-mt-2 text-center text-sm text-gray-500">
+              Enter the code sent to {email}
+            </p>
+          )}
+
+          {error && (
+            <div className="w-full rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
+          {step === 'credentials' ? (
+            <form
+              onSubmit={submitCredentials}
+              className="flex w-full flex-col gap-5"
             >
-              Resend code
-            </button>
-          </form>
-        )}
-      </Card>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="email" className="text-sm text-brand-black">
+                  Email or User Name
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  className={inputClass}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="password" className="text-sm text-brand-black">
+                    Password
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((p) => !p)}
+                    className="flex items-center gap-1 text-sm text-gray-400 transition-colors hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <Eye className="size-4" />
+                    ) : (
+                      <EyeOff className="size-4" />
+                    )}
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  autoComplete="current-password"
+                  className={inputClass}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-brand-primary py-3.5 text-sm font-semibold text-white transition-all hover:bg-brand-primary/90 active:scale-[0.99] disabled:opacity-50"
+              >
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                Sign in
+              </button>
+            </form>
+          ) : (
+            <form onSubmit={submitOtp} className="flex w-full flex-col gap-5">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="code" className="text-sm text-brand-black">
+                  Verification code
+                </label>
+                <input
+                  id="code"
+                  inputMode="numeric"
+                  placeholder="6-digit code"
+                  className={inputClass}
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  maxLength={6}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={busy}
+                className="mt-1 flex w-full items-center justify-center gap-2 rounded-full bg-brand-primary py-3.5 text-sm font-semibold text-white transition-all hover:bg-brand-primary/90 active:scale-[0.99] disabled:opacity-50"
+              >
+                {busy && <Loader2 className="size-4 animate-spin" />}
+                Verify &amp; sign in
+              </button>
+
+              <button
+                type="button"
+                onClick={resend}
+                className="text-center text-sm text-brand-secondary underline underline-offset-2 transition-opacity hover:opacity-80"
+              >
+                Resend code
+              </button>
+            </form>
+          )}
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 px-6 py-4 sm:px-8">
+        <p className="text-center text-xs text-gray-500">
+          © 2026 CRADLEN. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 }

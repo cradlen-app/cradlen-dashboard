@@ -2,10 +2,12 @@
 
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getList, getOne, patchAction } from '@/lib/api';
+import { UserPlus } from 'lucide-react';
+import { getList, getOne, patchAction, postAction } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { AdminTeamMember, PlatformSettings } from '@/lib/types';
 import { Spinner } from '@/components/ui';
+import { Modal } from '@/components/Modal';
 import { Topbar } from '@/components/Topbar';
 import { AvatarBadge } from '@/components/dashboard/AvatarBadge';
 
@@ -40,6 +42,21 @@ export default function SettingsPage() {
     onSuccess: (data) => {
       queryClient.setQueryData(['settings'], data);
       queryClient.invalidateQueries({ queryKey: ['settings'] });
+    },
+  });
+
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+
+  const invite = useMutation({
+    mutationFn: (body: { full_name: string; email: string }) =>
+      postAction<AdminTeamMember>('admins', body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admins'] });
+      setInviteOpen(false);
+      setFullName('');
+      setEmail('');
     },
   });
 
@@ -143,7 +160,18 @@ export default function SettingsPage() {
 
         {/* Admin team */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6">
-          <h2 className="text-base font-semibold text-brand-black">Admin team</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-semibold text-brand-black">
+              Admin team
+            </h2>
+            <button
+              onClick={() => setInviteOpen(true)}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-primary/90"
+            >
+              <UserPlus className="size-4" />
+              Invite admin
+            </button>
+          </div>
 
           <div className="mt-4 space-y-3">
             {adminsQuery.isLoading ? (
@@ -174,6 +202,59 @@ export default function SettingsPage() {
               ))
             )}
           </div>
+
+          <Modal
+            open={inviteOpen}
+            onClose={() => setInviteOpen(false)}
+            title="Invite new admin"
+          >
+            <div className="space-y-4">
+              <p className="text-sm text-gray-500">
+                They&apos;ll get an email with a link to set their password.
+              </p>
+              <input
+                autoFocus
+                placeholder="Full name"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-brand-black outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+              />
+              <input
+                type="email"
+                placeholder="Email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-brand-black outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+              />
+              {invite.isError && (
+                <p className="text-sm text-red-600">
+                  {(invite.error as Error).message || 'Could not send invite.'}
+                </p>
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setInviteOpen(false)}
+                  className="rounded-xl border border-gray-200 px-4 py-2 text-sm font-medium text-brand-black hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={
+                    !fullName.trim() || !email.includes('@') || invite.isPending
+                  }
+                  onClick={() =>
+                    invite.mutate({
+                      full_name: fullName.trim(),
+                      email: email.trim(),
+                    })
+                  }
+                  className="rounded-xl bg-brand-primary px-4 py-2 text-sm font-semibold text-white hover:bg-brand-primary/90 disabled:opacity-50"
+                >
+                  {invite.isPending ? 'Sending…' : 'Send invite'}
+                </button>
+              </div>
+            </div>
+          </Modal>
         </section>
       </div>
     </div>

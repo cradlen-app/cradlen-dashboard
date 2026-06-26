@@ -154,10 +154,19 @@ export interface PaymentListItem {
   created_at: string;
 }
 
+export interface PaymentItem {
+  kind: 'PLAN' | 'ADD_ON';
+  label: string;
+  quantity: number;
+  unit_amount: string;
+  amount: string;
+}
+
 export interface PaymentDetail extends PaymentListItem {
   submitted_by_phone: string | null;
   verified_by_name: string | null;
   proofs: PaymentProof[];
+  items: PaymentItem[];
 }
 
 export interface AuditLogEntry {

@@ -7,7 +7,7 @@ import { ChevronLeft } from 'lucide-react';
 import { getOne, postAction } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { formatCurrencyFull } from '@/lib/format';
-import type { PaymentDetail } from '@/lib/types';
+import type { PaymentDetail, PaymentItem } from '@/lib/types';
 import { Spinner, StatusBadge } from '@/components/ui';
 import { Topbar } from '@/components/Topbar';
 import { Modal } from '@/components/Modal';
@@ -227,10 +227,23 @@ export default function PaymentDetailPage({
                 </span>
               }
             />
-            <InfoRow
-              label="Amount"
-              value={formatCurrencyFull(Number(data.amount), data.currency)}
-            />
+            {data.items.length > 0 ? (
+              <>
+                {data.items.map((it, i) => (
+                  <PaymentLine key={i} item={it} currency={data.currency} />
+                ))}
+                <Divider />
+                <InfoRow
+                  label="Total"
+                  value={formatCurrencyFull(Number(data.amount), data.currency)}
+                />
+              </>
+            ) : (
+              <InfoRow
+                label="Amount"
+                value={formatCurrencyFull(Number(data.amount), data.currency)}
+              />
+            )}
             <Divider />
             <InfoRow
               label="Payment method"
@@ -312,6 +325,33 @@ function InfoRow({
         )}
       >
         {value}
+      </span>
+    </div>
+  );
+}
+
+function PaymentLine({
+  item,
+  currency,
+}: {
+  item: PaymentItem;
+  currency: string;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-4 py-1.5 text-sm">
+      <span className="min-w-0 break-words capitalize text-gray-500">
+        {item.label.replace(/_/g, ' ')}
+      </span>
+      <span className="shrink-0 text-right">
+        <span className="font-medium text-brand-black">
+          {formatCurrencyFull(Number(item.amount), currency)}
+        </span>
+        {item.quantity > 1 && (
+          <span className="block text-xs text-gray-500">
+            {item.quantity} ×{' '}
+            {formatCurrencyFull(Number(item.unit_amount), currency)}
+          </span>
+        )}
       </span>
     </div>
   );

@@ -116,6 +116,15 @@ export interface SubscriptionListItem {
   add_on_count: number;
 }
 
+export interface SubscriptionPlanOption {
+  plan: string;
+  max_branches: number;
+  max_staff: number;
+  amount: number | null;
+  currency: string | null;
+  billing_interval: 'MONTHLY' | 'YEARLY' | null;
+}
+
 export interface SubscriptionStats {
   total: number;
   active: number;

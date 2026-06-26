@@ -13,7 +13,11 @@ import {
 import { getList, getOne, postAction, qs } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import { formatCurrencyFull, formatCurrencyShort } from '@/lib/format';
-import type { SubscriptionListItem, SubscriptionStats } from '@/lib/types';
+import type {
+  SubscriptionListItem,
+  SubscriptionPlanOption,
+  SubscriptionStats,
+} from '@/lib/types';
 import { Spinner, StatusBadge } from '@/components/ui';
 import { Topbar } from '@/components/Topbar';
 import { Modal } from '@/components/Modal';
@@ -28,8 +32,6 @@ const TABS = [
   { label: 'Expired', value: 'EXPIRED' },
   { label: 'Cancelled', value: 'CANCELLED' },
 ];
-
-const PLANS = ['individual', 'center', 'network'];
 
 const COLS =
   'grid-cols-[2fr_1.5fr_0.9fr_1.1fr_0.7fr_0.9fr_minmax(230px,auto)]';
@@ -63,7 +65,7 @@ export default function SubscriptionsPage() {
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState<ModalState>(null);
   const [days, setDays] = useState('30');
-  const [plan, setPlan] = useState(PLANS[0]);
+  const [plan, setPlan] = useState('');
   const limit = 20;
 
   // Reset to the first page whenever filters change (adjust-state-on-render).
@@ -77,6 +79,11 @@ export default function SubscriptionsPage() {
   const statsQuery = useQuery({
     queryKey: ['subscription-stats'],
     queryFn: () => getOne<SubscriptionStats>('subscriptions/stats'),
+  });
+
+  const plansQuery = useQuery({
+    queryKey: ['subscription-plans'],
+    queryFn: () => getOne<SubscriptionPlanOption[]>('subscriptions/plans'),
   });
 
   const { data, isLoading } = useQuery({
@@ -116,6 +123,7 @@ export default function SubscriptionsPage() {
   });
 
   const stats = statsQuery.data;
+  const plans = plansQuery.data ?? [];
   const currency = stats?.currency ?? 'EGP';
   const rows = data?.data ?? [];
   const total = data?.meta.total ?? 0;
@@ -317,7 +325,7 @@ export default function SubscriptionsPage() {
                   </button>
                   <button
                     onClick={() => {
-                      setPlan(PLANS[0]);
+                      setPlan(s.plan);
                       setModal({ kind: 'change-plan', sub: s });
                     }}
                     className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-brand-black transition-colors hover:bg-gray-50"
@@ -423,19 +431,32 @@ export default function SubscriptionsPage() {
       >
         <div className="space-y-4">
           <p className="text-sm text-gray-500">
-            {modal?.sub.organization_name} — switch to:
+            {modal?.sub.organization_name} — currently on{' '}
+            <span className="font-medium capitalize text-brand-black">
+              {modal?.sub.plan.replace(/_/g, ' ')}
+            </span>
+            . Switch to:
           </p>
-          <select
-            value={plan}
-            onChange={(e) => setPlan(e.target.value)}
-            className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm capitalize text-brand-black outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
-          >
-            {PLANS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
+          {plansQuery.isLoading ? (
+            <Spinner />
+          ) : (
+            <select
+              value={plan}
+              onChange={(e) => setPlan(e.target.value)}
+              className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm capitalize text-brand-black outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+            >
+              {plans.map((p) => (
+                <option key={p.plan} value={p.plan}>
+                  {p.plan.replace(/_/g, ' ')}
+                  {p.amount != null
+                    ? ` — ${formatCurrencyFull(p.amount, p.currency ?? currency)} / ${(
+                        p.billing_interval ?? ''
+                      ).toLowerCase()}`
+                    : ''}
+                </option>
+              ))}
+            </select>
+          )}
           <div className="flex justify-end gap-2">
             <button
               onClick={() => setModal(null)}
@@ -444,7 +465,11 @@ export default function SubscriptionsPage() {
               Cancel
             </button>
             <button
-              disabled={changePlan.isPending}
+              disabled={
+                !plan ||
+                plan === modal?.sub.plan ||
+                changePlan.isPending
+              }
               onClick={() =>
                 modal?.kind === 'change-plan' &&
                 changePlan.mutate({ id: modal.sub.id, plan })

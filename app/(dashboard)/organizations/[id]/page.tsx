@@ -44,6 +44,8 @@ export default function OrganizationDetailPage({
   }
 
   const suspended = data.status === 'SUSPENDED';
+  const branches = data.branches ?? [];
+  const recentActivity = data.recent_activity ?? [];
   const subtitle = [
     data.specialty,
     data.city,
@@ -152,10 +154,10 @@ export default function OrganizationDetailPage({
           <section className="rounded-2xl border border-gray-200 bg-white p-6">
             <h3 className="text-base font-semibold text-brand-black">Branches</h3>
             <div className="mt-4 space-y-1">
-              {data.branches.length === 0 ? (
+              {branches.length === 0 ? (
                 <p className="text-sm text-gray-400">No branches.</p>
               ) : (
-                data.branches.map((b) => (
+                branches.map((b) => (
                   <div
                     key={b.id}
                     className="flex items-center gap-3 rounded-xl px-2 py-2.5 hover:bg-gray-50"
@@ -254,10 +256,10 @@ export default function OrganizationDetailPage({
               Recent activity
             </h3>
             <div className="mt-4 space-y-4">
-              {data.recent_activity.length === 0 ? (
+              {recentActivity.length === 0 ? (
                 <p className="text-sm text-gray-400">No activity yet.</p>
               ) : (
-                data.recent_activity.map((a, i) => (
+                recentActivity.map((a, i) => (
                   <div key={i} className="flex gap-3">
                     <span className="mt-1.5 size-2 shrink-0 rounded-full bg-brand-primary" />
                     <div className="min-w-0">

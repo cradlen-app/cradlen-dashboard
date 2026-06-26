@@ -6,6 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getOne } from '@/lib/api';
 import type { AdminMe } from '@/lib/types';
 import { Sidebar } from '@/components/Sidebar';
+import { BottomTabs } from '@/components/BottomTabs';
 import { AppHeader } from '@/components/AppHeader';
 import { Spinner } from '@/components/ui';
 
@@ -38,11 +39,14 @@ export default function DashboardLayout({
     <div className="flex h-screen flex-col bg-gray-50">
       <AppHeader />
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <Sidebar />
-        <main className="min-w-0 flex-1 overflow-y-auto p-6 lg:p-8">
+        <div className="hidden shrink-0 lg:block">
+          <Sidebar />
+        </div>
+        <main className="min-w-0 flex-1 overflow-y-auto p-6 pb-24 lg:p-8 lg:pb-8">
           {children}
         </main>
       </div>
+      <BottomTabs />
     </div>
   );
 }

@@ -22,7 +22,9 @@ export function AppHeader() {
       <div className="flex items-center gap-1">
         <NotificationBell />
         <div className="mx-1.5 hidden h-5 w-px bg-gray-200 lg:block" />
-        <UserMenu />
+        <div className="hidden lg:block">
+          <UserMenu />
+        </div>
       </div>
     </header>
   );

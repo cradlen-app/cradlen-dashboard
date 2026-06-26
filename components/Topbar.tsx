@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
+import { UserMenu } from '@/components/UserMenu';
 
 export function Topbar({
   title,
@@ -35,10 +36,11 @@ export function Topbar({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search organizations, contacts…"
-            className="w-64 rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 lg:w-80"
+            className="w-64 rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 lg:w-80"
           />
         </form>
         <NotificationBell />
+        <UserMenu />
       </div>
     </header>
   );

@@ -31,7 +31,7 @@ export function RevenueChart({
           <div className="text-2xl font-semibold text-brand-black">
             {formatCurrencyFull(total, currency)}
           </div>
-          {changePct !== null && (
+          {changePct !== null ? (
             <div
               className={cn(
                 'text-sm font-medium',
@@ -40,7 +40,11 @@ export function RevenueChart({
             >
               {up ? '▲' : '▼'} {Math.abs(changePct)}% vs last month
             </div>
-          )}
+          ) : total > 0 ? (
+            <div className="text-sm font-medium text-brand-primary">
+              ▲ New this month
+            </div>
+          ) : null}
         </div>
       </div>
 

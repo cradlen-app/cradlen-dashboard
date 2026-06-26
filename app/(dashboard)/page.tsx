@@ -8,6 +8,7 @@ import {
   Building2,
   CheckCircle2,
   LineChart,
+  UserCheck,
 } from 'lucide-react';
 import { getList, getOne, qs } from '@/lib/api';
 import {
@@ -50,6 +51,23 @@ export default function DashboardHome() {
   const m = metricsQuery.data;
   const currency = m?.currency ?? 'EGP';
 
+  // MoM change indicator — fall back when there's no prior month to compare to.
+  let mrrSub: string | undefined;
+  let mrrTone = 'text-brand-primary';
+  if (m) {
+    if (m.mrr_change_pct != null) {
+      const up = m.mrr_change_pct >= 0;
+      mrrSub = `${up ? '▲' : '▼'} ${Math.abs(m.mrr_change_pct)}% MoM`;
+      mrrTone = up ? 'text-brand-primary' : 'text-red-500';
+    } else if (m.monthly_recurring_revenue > 0) {
+      mrrSub = 'New this month';
+      mrrTone = 'text-brand-primary';
+    } else {
+      mrrSub = 'No revenue yet';
+      mrrTone = 'text-gray-400';
+    }
+  }
+
   return (
     <div>
       <Topbar
@@ -58,7 +76,7 @@ export default function DashboardHome() {
       />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           label="Organizations"
           value={m?.organizations_total ?? '—'}
@@ -87,12 +105,8 @@ export default function DashboardHome() {
           value={
             m ? formatCurrencyShort(m.monthly_recurring_revenue, currency) : '—'
           }
-          sub={
-            m?.mrr_change_pct != null
-              ? `▲ ${Math.abs(m.mrr_change_pct)}% MoM`
-              : undefined
-          }
-          subTone="text-brand-primary"
+          sub={mrrSub}
+          subTone={mrrTone}
           icon={LineChart}
           iconTone="bg-brand-primary/10 text-brand-primary"
           href="/subscriptions"
@@ -105,6 +119,19 @@ export default function DashboardHome() {
           icon={AlertCircle}
           iconTone="bg-red-50 text-red-500"
           href="/payments"
+        />
+        <StatCard
+          label="Portal accounts"
+          value={m?.portal_accounts_total ?? '—'}
+          sub={
+            m && m.portal_activation_rate != null
+              ? `${m.portal_activation_rate}% activation`
+              : undefined
+          }
+          subTone="text-brand-primary"
+          icon={UserCheck}
+          iconTone="bg-brand-primary/10 text-brand-primary"
+          href="/organizations"
         />
       </div>
 

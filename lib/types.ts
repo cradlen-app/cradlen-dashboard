@@ -17,35 +17,77 @@ export interface OrganizationListItem {
   status: string;
   branch_count: number;
   staff_count: number;
+  enrolled_patients: number;
   subscription_status: string | null;
   plan: string | null;
   city: string | null;
+  specialty: string | null;
+  primary_contact_name: string | null;
+  primary_contact_email: string | null;
+  mrr: number | null;
+  branch_limit: number | null;
+  staff_limit: number | null;
   created_at: string;
+}
+
+export interface OrgOwner {
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  specialty: string | null;
+}
+
+export interface OrgBilling {
+  amount: number;
+  currency: string;
+  interval: 'MONTHLY' | 'YEARLY';
+}
+
+export interface OrgPlanLimits {
+  max_branches: number;
+  max_staff: number;
+}
+
+export interface OrgBranch {
+  id: string;
+  name: string;
+  city: string;
+  governorate: string;
+  staff_count: number;
+  is_main: boolean;
+}
+
+export interface OrgAddress {
+  address: string;
+  governorate: string;
+  country: string | null;
+}
+
+export interface OrgActivity {
+  type: string;
+  title: string;
+  body: string;
+  created_at: string;
+}
+
+export interface OrgPortal {
+  enrolled_patients: number;
+  portal_accounts: number;
+  active_accounts: number;
+  activation_rate: number | null;
+  active_this_month: number;
 }
 
 export interface OrganizationDetail extends OrganizationListItem {
   subscription_ends_at: string | null;
   trial_ends_at: string | null;
-}
-
-export interface UserProfile {
-  profile_id: string;
-  organization_id: string;
-  organization_name: string;
-  role: string | null;
-  is_active: boolean;
-}
-
-export interface UserListItem {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone_number: string | null;
-  is_active: boolean;
-  profile_count: number;
-  profiles: UserProfile[];
-  created_at: string;
+  owner: OrgOwner | null;
+  billing: OrgBilling | null;
+  plan_limits: OrgPlanLimits | null;
+  branches: OrgBranch[];
+  address: OrgAddress | null;
+  recent_activity: OrgActivity[];
+  portal: OrgPortal;
 }
 
 export interface SubscriptionListItem {
@@ -57,6 +99,31 @@ export interface SubscriptionListItem {
   starts_at: string | null;
   ends_at: string | null;
   trial_ends_at: string | null;
+  billing_interval: 'MONTHLY' | 'YEARLY' | null;
+  amount: number | null;
+  currency: string | null;
+  mrr: number | null;
+  add_on_count: number;
+}
+
+export interface SubscriptionPlanOption {
+  plan: string;
+  max_branches: number;
+  max_staff: number;
+  amount: number | null;
+  currency: string | null;
+  billing_interval: 'MONTHLY' | 'YEARLY' | null;
+}
+
+export interface SubscriptionStats {
+  total: number;
+  active: number;
+  trial: number;
+  expired: number;
+  cancelled: number;
+  mrr: number;
+  currency: string;
+  plan_distribution: PlanDistributionItem[];
 }
 
 export interface PaymentProof {
@@ -76,8 +143,11 @@ export interface PaymentListItem {
   status: string;
   provider: string;
   reference: string | null;
+  billing_interval: 'MONTHLY' | 'YEARLY';
   amount: string;
   currency: string;
+  submitted_by_name: string | null;
+  submitted_by_email: string | null;
   verified_by_id: string | null;
   verified_at: string | null;
   rejection_reason: string | null;
@@ -85,6 +155,8 @@ export interface PaymentListItem {
 }
 
 export interface PaymentDetail extends PaymentListItem {
+  submitted_by_phone: string | null;
+  verified_by_name: string | null;
   proofs: PaymentProof[];
 }
 
@@ -120,6 +192,9 @@ export interface AdminMetricsOverview {
   mrr_change_pct: number | null;
   revenue_history: RevenuePoint[];
   plan_distribution: PlanDistributionItem[];
+  portal_accounts_total: number;
+  enrolled_patients_total: number;
+  portal_activation_rate: number | null;
 }
 
 export type AdminNotificationType =

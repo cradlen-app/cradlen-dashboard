@@ -128,8 +128,11 @@ export interface PaymentListItem {
   status: string;
   provider: string;
   reference: string | null;
+  billing_interval: 'MONTHLY' | 'YEARLY';
   amount: string;
   currency: string;
+  submitted_by_name: string | null;
+  submitted_by_email: string | null;
   verified_by_id: string | null;
   verified_at: string | null;
   rejection_reason: string | null;
@@ -137,6 +140,8 @@ export interface PaymentListItem {
 }
 
 export interface PaymentDetail extends PaymentListItem {
+  submitted_by_phone: string | null;
+  verified_by_name: string | null;
   proofs: PaymentProof[];
 }
 

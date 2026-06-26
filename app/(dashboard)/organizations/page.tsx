@@ -91,13 +91,14 @@ function OrganizationsContent() {
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         {/* Horizontally scrollable on small screens; natural fit at lg+ */}
         <div className="overflow-x-auto">
-          <div className="min-w-[900px] lg:min-w-0">
-            <div className="grid grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_1fr_0.9fr_auto] gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+          <div className="min-w-[1000px] lg:min-w-0">
+            <div className="grid grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_0.8fr_1fr_0.9fr_auto] gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400">
               <span>Organization</span>
               <span>Primary contact</span>
               <span>Plan</span>
               <span>Branches</span>
               <span>Staff</span>
+              <span>Patients</span>
               <span>MRR</span>
               <span>Status</span>
               <span />
@@ -114,7 +115,7 @@ function OrganizationsContent() {
                   <button
                     key={o.id}
                     onClick={() => router.push(`/organizations/${o.id}`)}
-                    className="grid w-full grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_1fr_0.9fr_auto] items-center gap-3 border-b border-gray-50 px-5 py-3 text-left transition-colors hover:bg-gray-50"
+                    className="grid w-full grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_0.8fr_1fr_0.9fr_auto] items-center gap-3 border-b border-gray-50 px-5 py-3 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
                       <AvatarBadge name={o.name} />
@@ -169,6 +170,10 @@ function OrganizationsContent() {
                     >
                       {staffOver && <TriangleAlert className="size-3.5" />}
                       {o.staff_count}
+                    </div>
+
+                    <div className="text-sm text-brand-black">
+                      {o.enrolled_patients}
                     </div>
 
                     <div className="text-sm font-medium text-brand-black">

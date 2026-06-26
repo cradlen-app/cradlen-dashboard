@@ -150,6 +150,55 @@ export default function OrganizationDetailPage({
             </div>
           </section>
 
+          {/* Patient portal */}
+          <section className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="flex items-start justify-between">
+              <h3 className="text-base font-semibold text-brand-black">
+                Patient portal
+              </h3>
+              {data.portal.activation_rate != null && (
+                <span className="inline-flex rounded-full bg-brand-primary/10 px-3 py-1 text-xs font-medium text-brand-primary">
+                  {data.portal.activation_rate}% activation
+                </span>
+              )}
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4">
+              <div>
+                <div className="text-xs text-gray-500">Enrolled</div>
+                <div className="mt-0.5 text-sm font-medium text-brand-black">
+                  {data.portal.enrolled_patients}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Portal accounts</div>
+                <div className="mt-0.5 text-sm font-medium text-brand-black">
+                  {data.portal.portal_accounts}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Active accounts</div>
+                <div className="mt-0.5 text-sm font-medium text-brand-black">
+                  {data.portal.active_accounts}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">Active this month</div>
+                <div className="mt-0.5 text-sm font-medium text-brand-black">
+                  {data.portal.active_this_month}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <UsageBar
+                label="Accounts created"
+                value={data.portal.portal_accounts}
+                max={data.portal.enrolled_patients}
+              />
+            </div>
+          </section>
+
           {/* Branches */}
           <section className="rounded-2xl border border-gray-200 bg-white p-6">
             <h3 className="text-base font-semibold text-brand-black">Branches</h3>

@@ -8,6 +8,7 @@ import {
   Building2,
   CheckCircle2,
   LineChart,
+  UserCheck,
 } from 'lucide-react';
 import { getList, getOne, qs } from '@/lib/api';
 import {
@@ -75,7 +76,7 @@ export default function DashboardHome() {
       />
 
       {/* Stat cards */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           label="Organizations"
           value={m?.organizations_total ?? '—'}
@@ -118,6 +119,19 @@ export default function DashboardHome() {
           icon={AlertCircle}
           iconTone="bg-red-50 text-red-500"
           href="/payments"
+        />
+        <StatCard
+          label="Portal accounts"
+          value={m?.portal_accounts_total ?? '—'}
+          sub={
+            m && m.portal_activation_rate != null
+              ? `${m.portal_activation_rate}% activation`
+              : undefined
+          }
+          subTone="text-brand-primary"
+          icon={UserCheck}
+          iconTone="bg-brand-primary/10 text-brand-primary"
+          href="/organizations"
         />
       </div>
 

@@ -17,6 +17,7 @@ export interface OrganizationListItem {
   status: string;
   branch_count: number;
   staff_count: number;
+  enrolled_patients: number;
   subscription_status: string | null;
   plan: string | null;
   city: string | null;
@@ -69,6 +70,14 @@ export interface OrgActivity {
   created_at: string;
 }
 
+export interface OrgPortal {
+  enrolled_patients: number;
+  portal_accounts: number;
+  active_accounts: number;
+  activation_rate: number | null;
+  active_this_month: number;
+}
+
 export interface OrganizationDetail extends OrganizationListItem {
   subscription_ends_at: string | null;
   trial_ends_at: string | null;
@@ -78,6 +87,7 @@ export interface OrganizationDetail extends OrganizationListItem {
   branches: OrgBranch[];
   address: OrgAddress | null;
   recent_activity: OrgActivity[];
+  portal: OrgPortal;
 }
 
 export interface SubscriptionListItem {
@@ -182,6 +192,9 @@ export interface AdminMetricsOverview {
   mrr_change_pct: number | null;
   revenue_history: RevenuePoint[];
   plan_distribution: PlanDistributionItem[];
+  portal_accounts_total: number;
+  enrolled_patients_total: number;
+  portal_activation_rate: number | null;
 }
 
 export type AdminNotificationType =

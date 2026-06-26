@@ -34,7 +34,7 @@ const TABS = [
 ];
 
 const COLS =
-  'grid-cols-[2fr_1.5fr_0.9fr_1.1fr_0.7fr_0.9fr_minmax(230px,auto)]';
+  'grid-cols-[2fr_1.5fr_0.9fr_1.1fr_1.4fr_0.9fr_minmax(230px,auto)]';
 
 type ModalState =
   | { kind: 'extend'; sub: SubscriptionListItem }
@@ -215,7 +215,7 @@ export default function SubscriptionsPage() {
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
         {/* Horizontally scrollable on small screens; natural fit at lg+ */}
         <div className="overflow-x-auto">
-          <div className="min-w-[960px] lg:min-w-0">
+          <div className="min-w-[1100px] lg:min-w-0">
             <div
               className={cn(
                 'grid gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400',
@@ -293,11 +293,21 @@ export default function SubscriptionsPage() {
                     </div>
 
                     {/* Add-ons */}
-                    <div>
-                      {s.add_on_count > 0 ? (
-                        <span className="inline-flex rounded-full bg-brand-secondary/20 px-2.5 py-1 text-xs font-medium text-brand-black">
-                          {s.add_on_count}
-                        </span>
+                    <div className="min-w-0">
+                      {s.add_ons.length > 0 ? (
+                        <div className="space-y-0.5">
+                          {s.add_ons.map((a, i) => (
+                            <div
+                              key={i}
+                              className="truncate text-xs text-brand-black"
+                            >
+                              <span className="capitalize">
+                                {a.name.replace(/_/g, ' ')}
+                              </span>
+                              <span className="text-gray-400"> ×{a.quantity}</span>
+                            </div>
+                          ))}
+                        </div>
                       ) : (
                         <span className="text-sm text-gray-400">—</span>
                       )}

@@ -23,12 +23,23 @@ type NavItem = {
   badge?: boolean;
 };
 
-const NAV: NavItem[] = [
-  { href: '/', label: 'Overview', icon: LayoutGrid },
-  { href: '/organizations', label: 'Organizations', icon: Building2 },
-  { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
-  { href: '/payments', label: 'Payments', icon: ReceiptText, badge: true },
-  { href: '/audit-log', label: 'Audit log', icon: ScrollText },
+const NAV_GROUPS: { heading: string; items: NavItem[] }[] = [
+  {
+    heading: 'Overview',
+    items: [{ href: '/', label: 'Overview', icon: LayoutGrid }],
+  },
+  {
+    heading: 'Management',
+    items: [
+      { href: '/organizations', label: 'Organizations', icon: Building2 },
+      { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
+      { href: '/payments', label: 'Payments', icon: ReceiptText, badge: true },
+    ],
+  },
+  {
+    heading: 'Activity',
+    items: [{ href: '/audit-log', label: 'Audit log', icon: ScrollText }],
+  },
 ];
 
 const SETTINGS_ITEM: NavItem = {
@@ -89,18 +100,30 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-full w-56 shrink-0 flex-col border-r border-gray-100 bg-white">
-      <nav className="flex-1 space-y-1 overflow-y-auto px-2 py-3">
-        {NAV.map((item) => (
-          <NavLink
-            key={item.href}
-            item={item}
-            active={isActive(item.href)}
-            awaiting={awaiting}
-          />
+      <nav className="flex-1 overflow-y-auto px-2 py-3">
+        {NAV_GROUPS.map((group) => (
+          <div key={group.heading}>
+            <div className="px-3 pb-2 pt-5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+              {group.heading}
+            </div>
+            <div className="space-y-1">
+              {group.items.map((item) => (
+                <NavLink
+                  key={item.href}
+                  item={item}
+                  active={isActive(item.href)}
+                  awaiting={awaiting}
+                />
+              ))}
+            </div>
+          </div>
         ))}
       </nav>
 
       <div className="border-t border-gray-100 px-2 py-3">
+        <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+          Settings
+        </div>
         <NavLink
           item={SETTINGS_ITEM}
           active={isActive(SETTINGS_ITEM.href)}

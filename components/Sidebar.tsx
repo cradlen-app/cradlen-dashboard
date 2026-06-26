@@ -94,22 +94,9 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-gray-200 bg-white">
-      {/* Logo lockup */}
-      <div className="flex items-center gap-3 px-5 py-5">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-brand-primary text-base font-bold text-white">
-          C
-        </span>
-        <div className="leading-tight">
-          <div className="text-sm font-semibold text-brand-black">Cradlen</div>
-          <div className="text-[10px] font-medium uppercase tracking-wider text-gray-400">
-            Admin console
-          </div>
-        </div>
-      </div>
-
+    <aside className="flex h-full w-60 shrink-0 flex-col overflow-y-auto border-r border-gray-200 bg-white">
       {/* Grouped nav */}
-      <nav className="flex-1 px-3">
+      <nav className="flex-1 px-3 pt-3">
         {NAV_GROUPS.map((group) => (
           <div key={group.heading}>
             <div className="px-3 pb-2 pt-5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">

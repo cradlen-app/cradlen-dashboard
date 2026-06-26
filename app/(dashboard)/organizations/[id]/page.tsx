@@ -113,7 +113,7 @@ export default function OrganizationDetailPage({
               )}
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-4">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <div className="text-xs text-gray-500">Billing</div>
                 <div className="mt-0.5 text-sm font-medium text-brand-black">

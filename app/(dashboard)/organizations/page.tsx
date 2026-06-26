@@ -89,15 +89,107 @@ function OrganizationsContent() {
 
       {/* Table */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <div className="grid grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_1fr_0.9fr_auto] gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400">
-          <span>Organization</span>
-          <span>Primary contact</span>
-          <span>Plan</span>
-          <span>Branches</span>
-          <span>Staff</span>
-          <span>MRR</span>
-          <span>Status</span>
-          <span />
+        {/* Horizontally scrollable on small screens; natural fit at lg+ */}
+        <div className="overflow-x-auto">
+          <div className="min-w-[900px] lg:min-w-0">
+            <div className="grid grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_1fr_0.9fr_auto] gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400">
+              <span>Organization</span>
+              <span>Primary contact</span>
+              <span>Plan</span>
+              <span>Branches</span>
+              <span>Staff</span>
+              <span>MRR</span>
+              <span>Status</span>
+              <span />
+            </div>
+
+            {!isLoading &&
+              rows.length > 0 &&
+              rows.map((o) => {
+                const branchOver =
+                  o.branch_limit != null && o.branch_count >= o.branch_limit;
+                const staffOver =
+                  o.staff_limit != null && o.staff_count >= o.staff_limit;
+                return (
+                  <button
+                    key={o.id}
+                    onClick={() => router.push(`/organizations/${o.id}`)}
+                    className="grid w-full grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_1fr_0.9fr_auto] items-center gap-3 border-b border-gray-50 px-5 py-3 text-left transition-colors hover:bg-gray-50"
+                  >
+                    <div className="flex items-center gap-3">
+                      <AvatarBadge name={o.name} />
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-medium text-brand-black">
+                          {o.name}
+                        </div>
+                        <div className="truncate text-xs capitalize text-gray-400">
+                          {o.specialty ?? '—'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="truncate text-sm text-brand-black">
+                        {o.primary_contact_name ?? '—'}
+                      </div>
+                      <div className="truncate text-xs text-gray-400">
+                        {o.primary_contact_email ?? ''}
+                      </div>
+                    </div>
+
+                    <div>
+                      {o.plan ? (
+                        <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-brand-black">
+                          {o.plan.replace(/_/g, ' ')}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                      )}
+                    </div>
+
+                    <div
+                      className={cn(
+                        'flex items-center gap-1 text-sm',
+                        branchOver
+                          ? 'font-medium text-red-500'
+                          : 'text-brand-black',
+                      )}
+                    >
+                      {branchOver && <TriangleAlert className="size-3.5" />}
+                      {o.branch_count}
+                    </div>
+
+                    <div
+                      className={cn(
+                        'flex items-center gap-1 text-sm',
+                        staffOver
+                          ? 'font-medium text-red-500'
+                          : 'text-brand-black',
+                      )}
+                    >
+                      {staffOver && <TriangleAlert className="size-3.5" />}
+                      {o.staff_count}
+                    </div>
+
+                    <div className="text-sm font-medium text-brand-black">
+                      {o.mrr != null ? formatCurrencyFull(o.mrr) : '—'}
+                    </div>
+
+                    <div
+                      className={cn(
+                        'text-sm font-medium',
+                        SUB_STATUS_TONE[o.subscription_status ?? ''] ??
+                          'text-gray-400',
+                      )}
+                    >
+                      {subStatusLabel(o.subscription_status)}
+                    </div>
+
+                    <ChevronRight className="size-4 text-gray-300" />
+                  </button>
+                );
+              })}
+          </div>
         </div>
 
         {isLoading ? (
@@ -106,88 +198,7 @@ function OrganizationsContent() {
           <div className="px-5 py-16 text-center text-sm text-gray-400">
             No organizations found.
           </div>
-        ) : (
-          rows.map((o) => {
-            const branchOver =
-              o.branch_limit != null && o.branch_count >= o.branch_limit;
-            const staffOver =
-              o.staff_limit != null && o.staff_count >= o.staff_limit;
-            return (
-              <button
-                key={o.id}
-                onClick={() => router.push(`/organizations/${o.id}`)}
-                className="grid w-full grid-cols-[2.2fr_1.8fr_1fr_0.8fr_0.7fr_1fr_0.9fr_auto] items-center gap-3 border-b border-gray-50 px-5 py-3 text-left transition-colors hover:bg-gray-50"
-              >
-                <div className="flex items-center gap-3">
-                  <AvatarBadge name={o.name} />
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-medium text-brand-black">
-                      {o.name}
-                    </div>
-                    <div className="truncate text-xs capitalize text-gray-400">
-                      {o.specialty ?? '—'}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="min-w-0">
-                  <div className="truncate text-sm text-brand-black">
-                    {o.primary_contact_name ?? '—'}
-                  </div>
-                  <div className="truncate text-xs text-gray-400">
-                    {o.primary_contact_email ?? ''}
-                  </div>
-                </div>
-
-                <div>
-                  {o.plan ? (
-                    <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-brand-black">
-                      {o.plan.replace(/_/g, ' ')}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-400">—</span>
-                  )}
-                </div>
-
-                <div
-                  className={cn(
-                    'flex items-center gap-1 text-sm',
-                    branchOver ? 'font-medium text-red-500' : 'text-brand-black',
-                  )}
-                >
-                  {branchOver && <TriangleAlert className="size-3.5" />}
-                  {o.branch_count}
-                </div>
-
-                <div
-                  className={cn(
-                    'flex items-center gap-1 text-sm',
-                    staffOver ? 'font-medium text-red-500' : 'text-brand-black',
-                  )}
-                >
-                  {staffOver && <TriangleAlert className="size-3.5" />}
-                  {o.staff_count}
-                </div>
-
-                <div className="text-sm font-medium text-brand-black">
-                  {o.mrr != null ? formatCurrencyFull(o.mrr) : '—'}
-                </div>
-
-                <div
-                  className={cn(
-                    'text-sm font-medium',
-                    SUB_STATUS_TONE[o.subscription_status ?? ''] ??
-                      'text-gray-400',
-                  )}
-                >
-                  {subStatusLabel(o.subscription_status)}
-                </div>
-
-                <ChevronRight className="size-4 text-gray-300" />
-              </button>
-            );
-          })
-        )}
+        ) : null}
 
         {/* Pagination */}
         {total > limit && (

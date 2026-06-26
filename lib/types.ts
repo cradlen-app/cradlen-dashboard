@@ -216,6 +216,15 @@ export interface AdminMetricsOverview {
   portal_activation_rate: number | null;
 }
 
+export interface AdminDailyMetricPoint {
+  date: string; // 'YYYY-MM-DD' (UTC day)
+  active_staff: number;
+  total_staff: number;
+  active_portals: number;
+  total_portals: number;
+  total_enrolled_patients: number;
+}
+
 export type AdminNotificationType =
   | 'ORGANIZATION_CREATED'
   | 'SUBSCRIPTION_STARTED'

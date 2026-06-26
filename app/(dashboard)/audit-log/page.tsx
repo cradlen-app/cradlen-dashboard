@@ -156,30 +156,150 @@ export default function AuditLogPage() {
             );
           })}
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Search action, target…"
-            className="w-64 rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 sm:w-64"
           />
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <div
-          className={cn(
-            'grid gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400',
-            COLS,
-          )}
-        >
-          <span>When</span>
-          <span>Admin</span>
-          <span>Action</span>
-          <span>Target</span>
-          <span />
+        {/* Horizontally scrollable on small screens; natural fit at lg+ */}
+        <div className="overflow-x-auto">
+          <div className="min-w-[760px] lg:min-w-0">
+            <div
+              className={cn(
+                'grid gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400',
+                COLS,
+              )}
+            >
+              <span>When</span>
+              <span>Admin</span>
+              <span>Action</span>
+              <span>Target</span>
+              <span />
+            </div>
+
+            {!isLoading &&
+              rows.length > 0 &&
+              rows.map((r) => {
+                const action = parseAction(r.action);
+                const ActionIcon = action.icon;
+                const expanded = expandedId === r.id;
+                const diff = diffEntries(r.before, r.after);
+                return (
+                  <div
+                    key={r.id}
+                    className="border-b border-gray-50 last:border-0"
+                  >
+                    <button
+                      onClick={() => setExpandedId(expanded ? null : r.id)}
+                      className={cn(
+                        'grid w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50',
+                        COLS,
+                      )}
+                    >
+                      {/* When */}
+                      <div className="min-w-0">
+                        <div className="text-sm text-brand-black">
+                          {shortDate(r.created_at)}
+                        </div>
+                        <div className="truncate text-xs text-gray-400">
+                          {timeAgo(r.created_at)}
+                        </div>
+                      </div>
+
+                      {/* Admin */}
+                      <div className="flex min-w-0 items-center gap-3">
+                        <AvatarBadge name={r.admin_email} />
+                        <span className="truncate text-sm font-medium text-brand-black">
+                          {r.admin_email}
+                        </span>
+                      </div>
+
+                      {/* Action */}
+                      <div className="min-w-0">
+                        <span
+                          className={cn(
+                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
+                            action.tone,
+                          )}
+                        >
+                          <ActionIcon className="size-3.5" />
+                          {action.label}
+                        </span>
+                      </div>
+
+                      {/* Target */}
+                      <div className="min-w-0 text-sm text-gray-500">
+                        <span className="capitalize">{r.target_type}</span>
+                        {r.target_id && (
+                          <span className="ml-1 font-mono text-xs text-gray-400">
+                            {r.target_id.slice(0, 8)}…
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Chevron */}
+                      <div className="flex justify-end text-gray-300">
+                        {expanded ? (
+                          <ChevronDown className="size-4" />
+                        ) : (
+                          <ChevronRight className="size-4" />
+                        )}
+                      </div>
+                    </button>
+
+                    {expanded && (
+                      <div className="border-t border-gray-100 bg-gray-50 px-5 py-4">
+                        {diff.length === 0 ? (
+                          <p className="text-sm text-gray-400">
+                            No payload recorded.
+                          </p>
+                        ) : (
+                          <div className="space-y-1.5">
+                            {diff.map((d) => (
+                              <div
+                                key={d.key}
+                                className="grid grid-cols-[140px_1fr] gap-3 text-sm"
+                              >
+                                <span className="truncate text-gray-500">
+                                  {d.key}
+                                </span>
+                                <span className="min-w-0 break-words">
+                                  {d.changed ? (
+                                    <>
+                                      <span className="text-gray-400 line-through">
+                                        {formatValue(d.before)}
+                                      </span>
+                                      <span className="mx-1.5 text-gray-400">
+                                        →
+                                      </span>
+                                      <span className="font-medium text-brand-black">
+                                        {formatValue(d.after)}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-brand-black">
+                                      {formatValue(d.after)}
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+          </div>
         </div>
 
         {isLoading ? (
@@ -188,115 +308,7 @@ export default function AuditLogPage() {
           <div className="px-5 py-16 text-center text-sm text-gray-400">
             No audit entries found.
           </div>
-        ) : (
-          rows.map((r) => {
-            const action = parseAction(r.action);
-            const ActionIcon = action.icon;
-            const expanded = expandedId === r.id;
-            const diff = diffEntries(r.before, r.after);
-            return (
-              <div key={r.id} className="border-b border-gray-50 last:border-0">
-                <button
-                  onClick={() => setExpandedId(expanded ? null : r.id)}
-                  className={cn(
-                    'grid w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-gray-50',
-                    COLS,
-                  )}
-                >
-                  {/* When */}
-                  <div className="min-w-0">
-                    <div className="text-sm text-brand-black">
-                      {shortDate(r.created_at)}
-                    </div>
-                    <div className="truncate text-xs text-gray-400">
-                      {timeAgo(r.created_at)}
-                    </div>
-                  </div>
-
-                  {/* Admin */}
-                  <div className="flex min-w-0 items-center gap-3">
-                    <AvatarBadge name={r.admin_email} />
-                    <span className="truncate text-sm font-medium text-brand-black">
-                      {r.admin_email}
-                    </span>
-                  </div>
-
-                  {/* Action */}
-                  <div className="min-w-0">
-                    <span
-                      className={cn(
-                        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium',
-                        action.tone,
-                      )}
-                    >
-                      <ActionIcon className="size-3.5" />
-                      {action.label}
-                    </span>
-                  </div>
-
-                  {/* Target */}
-                  <div className="min-w-0 text-sm text-gray-500">
-                    <span className="capitalize">{r.target_type}</span>
-                    {r.target_id && (
-                      <span className="ml-1 font-mono text-xs text-gray-400">
-                        {r.target_id.slice(0, 8)}…
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Chevron */}
-                  <div className="flex justify-end text-gray-300">
-                    {expanded ? (
-                      <ChevronDown className="size-4" />
-                    ) : (
-                      <ChevronRight className="size-4" />
-                    )}
-                  </div>
-                </button>
-
-                {expanded && (
-                  <div className="border-t border-gray-100 bg-gray-50 px-5 py-4">
-                    {diff.length === 0 ? (
-                      <p className="text-sm text-gray-400">
-                        No payload recorded.
-                      </p>
-                    ) : (
-                      <div className="space-y-1.5">
-                        {diff.map((d) => (
-                          <div
-                            key={d.key}
-                            className="grid grid-cols-[140px_1fr] gap-3 text-sm"
-                          >
-                            <span className="truncate text-gray-500">
-                              {d.key}
-                            </span>
-                            <span className="min-w-0 break-words">
-                              {d.changed ? (
-                                <>
-                                  <span className="text-gray-400 line-through">
-                                    {formatValue(d.before)}
-                                  </span>
-                                  <span className="mx-1.5 text-gray-400">→</span>
-                                  <span className="font-medium text-brand-black">
-                                    {formatValue(d.after)}
-                                  </span>
-                                </>
-                              ) : (
-                                <span className="text-brand-black">
-                                  {formatValue(d.after)}
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        )}
+        ) : null}
 
         {/* Pagination */}
         {total > limit && (

@@ -109,6 +109,22 @@ export interface SubscriptionListItem {
   starts_at: string | null;
   ends_at: string | null;
   trial_ends_at: string | null;
+  billing_interval: 'MONTHLY' | 'YEARLY' | null;
+  amount: number | null;
+  currency: string | null;
+  mrr: number | null;
+  add_on_count: number;
+}
+
+export interface SubscriptionStats {
+  total: number;
+  active: number;
+  trial: number;
+  expired: number;
+  cancelled: number;
+  mrr: number;
+  currency: string;
+  plan_distribution: PlanDistributionItem[];
 }
 
 export interface PaymentProof {

@@ -80,26 +80,6 @@ export interface OrganizationDetail extends OrganizationListItem {
   recent_activity: OrgActivity[];
 }
 
-export interface UserProfile {
-  profile_id: string;
-  organization_id: string;
-  organization_name: string;
-  role: string | null;
-  is_active: boolean;
-}
-
-export interface UserListItem {
-  id: string;
-  first_name: string;
-  last_name: string;
-  email: string | null;
-  phone_number: string | null;
-  is_active: boolean;
-  profile_count: number;
-  profiles: UserProfile[];
-  created_at: string;
-}
-
 export interface SubscriptionListItem {
   id: string;
   organization_id: string;

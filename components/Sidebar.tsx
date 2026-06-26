@@ -12,7 +12,6 @@ import {
   ReceiptText,
   ScrollText,
   Settings,
-  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getOne } from '@/lib/api';
@@ -22,7 +21,6 @@ import type { AdminMe, AdminMetricsOverview } from '@/lib/types';
 const NAV = [
   { href: '/', label: 'Overview', icon: LayoutGrid },
   { href: '/organizations', label: 'Organizations', icon: Building2 },
-  { href: '/users', label: 'Users', icon: Users },
   { href: '/subscriptions', label: 'Subscriptions', icon: CreditCard },
   { href: '/payments', label: 'Payments', icon: ReceiptText, badge: true },
   { href: '/audit-log', label: 'Audit log', icon: ScrollText },

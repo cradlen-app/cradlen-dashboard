@@ -18,6 +18,7 @@ import {
   timeAgo,
 } from '@/lib/format';
 import type {
+  AdminDailyMetricPoint,
   AdminMetricsOverview,
   OrganizationListItem,
   PaymentListItem,
@@ -26,6 +27,7 @@ import { StatusBadge, Spinner } from '@/components/ui';
 import { Topbar } from '@/components/Topbar';
 import { StatCard } from '@/components/dashboard/StatCard';
 import { RevenueChart } from '@/components/dashboard/RevenueChart';
+import { DailyTrendChart } from '@/components/dashboard/DailyTrendChart';
 import { PlanDistribution } from '@/components/dashboard/PlanDistribution';
 import { AvatarBadge } from '@/components/dashboard/AvatarBadge';
 
@@ -46,6 +48,11 @@ export default function DashboardHome() {
     queryKey: ['recent-orgs'],
     queryFn: () =>
       getList<OrganizationListItem>('organizations' + qs({ limit: 4 })),
+  });
+  const dailyTrends = useQuery({
+    queryKey: ['daily-trends'],
+    queryFn: () =>
+      getOne<AdminDailyMetricPoint[]>('metrics/daily-trends' + qs({ days: 30 })),
   });
 
   const m = metricsQuery.data;
@@ -152,6 +159,17 @@ export default function DashboardHome() {
           )}
         </div>
         <PlanDistribution items={m?.plan_distribution ?? []} />
+      </div>
+
+      {/* Daily engagement trend */}
+      <div className="mt-6">
+        {dailyTrends.data ? (
+          <DailyTrendChart data={dailyTrends.data} />
+        ) : (
+          <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <Spinner />
+          </div>
+        )}
       </div>
 
       {/* Lists */}

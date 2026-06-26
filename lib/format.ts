@@ -64,3 +64,9 @@ export function monthYear(iso: string): string {
   const d = new Date(iso);
   return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
+
+/** `'2026-06-26'` → `Jun 26` (parsed as a plain date, no timezone shift). */
+export function dayShort(isoDate: string): string {
+  const [, m, d] = isoDate.split('-').map(Number);
+  return `${MONTHS[m - 1] ?? '?'} ${d}`;
+}

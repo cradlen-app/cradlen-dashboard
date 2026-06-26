@@ -200,32 +200,162 @@ export default function SubscriptionsPage() {
             </button>
           ))}
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by organization…"
-            className="w-64 rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20"
+            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 sm:w-64"
           />
         </div>
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-        <div
-          className={cn(
-            'grid gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400',
-            COLS,
-          )}
-        >
-          <span>Organization</span>
-          <span>Plan</span>
-          <span>Status</span>
-          <span>Renews</span>
-          <span>Add-ons</span>
-          <span>MRR</span>
-          <span />
+        {/* Horizontally scrollable on small screens; natural fit at lg+ */}
+        <div className="overflow-x-auto">
+          <div className="min-w-[960px] lg:min-w-0">
+            <div
+              className={cn(
+                'grid gap-3 border-b border-gray-100 px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-400',
+                COLS,
+              )}
+            >
+              <span>Organization</span>
+              <span>Plan</span>
+              <span>Status</span>
+              <span>Renews</span>
+              <span>Add-ons</span>
+              <span>MRR</span>
+              <span />
+            </div>
+
+            {!isLoading &&
+              rows.length > 0 &&
+              rows.map((s) => {
+                const renewAt =
+                  s.status === 'TRIAL' ? s.trial_ends_at : s.ends_at;
+                const active = s.status === 'ACTIVE' || s.status === 'TRIAL';
+                const busy = simple.isPending && simple.variables?.id === s.id;
+                return (
+                  <div
+                    key={s.id}
+                    className={cn(
+                      'grid items-center gap-3 border-b border-gray-50 px-5 py-3',
+                      COLS,
+                    )}
+                  >
+                    {/* Organization */}
+                    <div className="flex min-w-0 items-center gap-3">
+                      <AvatarBadge name={s.organization_name} />
+                      <Link
+                        href={`/organizations/${s.organization_id}`}
+                        className="truncate text-sm font-medium text-brand-black transition-colors hover:text-brand-primary"
+                      >
+                        {s.organization_name}
+                      </Link>
+                    </div>
+
+                    {/* Plan */}
+                    <div className="min-w-0">
+                      <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-brand-black">
+                        {s.plan.replace(/_/g, ' ')}
+                      </span>
+                      <div className="mt-1 truncate text-xs text-gray-500">
+                        {s.amount != null
+                          ? `${formatCurrencyFull(s.amount, s.currency ?? currency)} · ${(
+                              s.billing_interval ?? ''
+                            ).toLowerCase()}`
+                          : '—'}
+                      </div>
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <StatusBadge status={s.status} />
+                    </div>
+
+                    {/* Renews */}
+                    <div className="min-w-0">
+                      {renewAt ? (
+                        <>
+                          <div className="text-sm text-brand-black">
+                            {shortDate(renewAt)}
+                          </div>
+                          <div className="truncate text-xs text-gray-400">
+                            {renewsLabel(renewAt)}
+                          </div>
+                        </>
+                      ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                      )}
+                    </div>
+
+                    {/* Add-ons */}
+                    <div>
+                      {s.add_on_count > 0 ? (
+                        <span className="inline-flex rounded-full bg-brand-secondary/20 px-2.5 py-1 text-xs font-medium text-brand-black">
+                          {s.add_on_count}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-gray-400">—</span>
+                      )}
+                    </div>
+
+                    {/* MRR */}
+                    <div className="text-sm font-medium text-brand-black">
+                      {s.mrr != null
+                        ? formatCurrencyShort(s.mrr, s.currency ?? currency)
+                        : '—'}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      <button
+                        onClick={() => {
+                          setDays('30');
+                          setModal({ kind: 'extend', sub: s });
+                        }}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-brand-black transition-colors hover:bg-gray-50"
+                      >
+                        Extend
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPlan(s.plan);
+                          setModal({ kind: 'change-plan', sub: s });
+                        }}
+                        className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-brand-black transition-colors hover:bg-gray-50"
+                      >
+                        Change plan
+                      </button>
+                      {active ? (
+                        <button
+                          disabled={busy}
+                          onClick={() =>
+                            simple.mutate({ id: s.id, verb: 'suspend' })
+                          }
+                          className="rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                        >
+                          Suspend
+                        </button>
+                      ) : (
+                        <button
+                          disabled={busy}
+                          onClick={() =>
+                            simple.mutate({ id: s.id, verb: 'reactivate' })
+                          }
+                          className="rounded-lg bg-brand-primary px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-primary/90 disabled:opacity-50"
+                        >
+                          Reactivate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
         </div>
 
         {isLoading ? (
@@ -234,130 +364,7 @@ export default function SubscriptionsPage() {
           <div className="px-5 py-16 text-center text-sm text-gray-400">
             No subscriptions found.
           </div>
-        ) : (
-          rows.map((s) => {
-            const renewAt = s.status === 'TRIAL' ? s.trial_ends_at : s.ends_at;
-            const active = s.status === 'ACTIVE' || s.status === 'TRIAL';
-            const busy =
-              simple.isPending && simple.variables?.id === s.id;
-            return (
-              <div
-                key={s.id}
-                className={cn(
-                  'grid items-center gap-3 border-b border-gray-50 px-5 py-3',
-                  COLS,
-                )}
-              >
-                {/* Organization */}
-                <div className="flex min-w-0 items-center gap-3">
-                  <AvatarBadge name={s.organization_name} />
-                  <Link
-                    href={`/organizations/${s.organization_id}`}
-                    className="truncate text-sm font-medium text-brand-black transition-colors hover:text-brand-primary"
-                  >
-                    {s.organization_name}
-                  </Link>
-                </div>
-
-                {/* Plan */}
-                <div className="min-w-0">
-                  <span className="inline-flex rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium capitalize text-brand-black">
-                    {s.plan.replace(/_/g, ' ')}
-                  </span>
-                  <div className="mt-1 truncate text-xs text-gray-500">
-                    {s.amount != null
-                      ? `${formatCurrencyFull(s.amount, s.currency ?? currency)} · ${(
-                          s.billing_interval ?? ''
-                        ).toLowerCase()}`
-                      : '—'}
-                  </div>
-                </div>
-
-                {/* Status */}
-                <div>
-                  <StatusBadge status={s.status} />
-                </div>
-
-                {/* Renews */}
-                <div className="min-w-0">
-                  {renewAt ? (
-                    <>
-                      <div className="text-sm text-brand-black">
-                        {shortDate(renewAt)}
-                      </div>
-                      <div className="truncate text-xs text-gray-400">
-                        {renewsLabel(renewAt)}
-                      </div>
-                    </>
-                  ) : (
-                    <span className="text-sm text-gray-400">—</span>
-                  )}
-                </div>
-
-                {/* Add-ons */}
-                <div>
-                  {s.add_on_count > 0 ? (
-                    <span className="inline-flex rounded-full bg-brand-secondary/20 px-2.5 py-1 text-xs font-medium text-brand-black">
-                      {s.add_on_count}
-                    </span>
-                  ) : (
-                    <span className="text-sm text-gray-400">—</span>
-                  )}
-                </div>
-
-                {/* MRR */}
-                <div className="text-sm font-medium text-brand-black">
-                  {s.mrr != null
-                    ? formatCurrencyShort(s.mrr, s.currency ?? currency)
-                    : '—'}
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-wrap items-center justify-end gap-1.5">
-                  <button
-                    onClick={() => {
-                      setDays('30');
-                      setModal({ kind: 'extend', sub: s });
-                    }}
-                    className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-brand-black transition-colors hover:bg-gray-50"
-                  >
-                    Extend
-                  </button>
-                  <button
-                    onClick={() => {
-                      setPlan(s.plan);
-                      setModal({ kind: 'change-plan', sub: s });
-                    }}
-                    className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-medium text-brand-black transition-colors hover:bg-gray-50"
-                  >
-                    Change plan
-                  </button>
-                  {active ? (
-                    <button
-                      disabled={busy}
-                      onClick={() =>
-                        simple.mutate({ id: s.id, verb: 'suspend' })
-                      }
-                      className="rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                    >
-                      Suspend
-                    </button>
-                  ) : (
-                    <button
-                      disabled={busy}
-                      onClick={() =>
-                        simple.mutate({ id: s.id, verb: 'reactivate' })
-                      }
-                      className="rounded-lg bg-brand-primary px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-brand-primary/90 disabled:opacity-50"
-                    >
-                      Reactivate
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
+        ) : null}
 
         {/* Pagination */}
         {total > limit && (

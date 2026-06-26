@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Bell, CheckCheck } from 'lucide-react';
 import { getList, postAction, qs } from '@/lib/api';
@@ -8,8 +9,25 @@ import { cn } from '@/lib/cn';
 import { timeAgo } from '@/lib/format';
 import type { AdminNotification } from '@/lib/types';
 
+/**
+ * Where a notification points. Payments have a detail page keyed by the payment
+ * id (`related_id`); everything else routes to the originating organization,
+ * since there is no subscription detail page. Returns null when there's nowhere
+ * meaningful to go (e.g. a notification with no organization).
+ */
+function notificationHref(n: AdminNotification): string | null {
+  if (n.type === 'PAYMENT_SUBMITTED' && n.related_id) {
+    return `/payments/${n.related_id}`;
+  }
+  if (n.organization_id) {
+    return `/organizations/${n.organization_id}`;
+  }
+  return null;
+}
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { data } = useQuery({
@@ -78,7 +96,12 @@ export function NotificationBell() {
                 items.map((n) => (
                   <button
                     key={n.id}
-                    onClick={() => !n.is_read && markRead.mutate(n.id)}
+                    onClick={() => {
+                      if (!n.is_read) markRead.mutate(n.id);
+                      const href = notificationHref(n);
+                      setOpen(false);
+                      if (href) router.push(href);
+                    }}
                     className={cn(
                       'flex w-full gap-3 border-b border-gray-50 px-4 py-3 text-left transition-colors hover:bg-gray-50',
                       !n.is_read && 'bg-brand-primary/5',

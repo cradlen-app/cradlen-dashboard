@@ -35,10 +35,7 @@ export interface TokenPair {
   refresh_token: string;
 }
 
-/** Exchanges a refresh token for a fresh pair, or null if it is no longer valid. */
-export async function refreshTokens(
-  refreshToken: string,
-): Promise<TokenPair | null> {
+async function doRefresh(refreshToken: string): Promise<TokenPair | null> {
   const { status, body } = await apiCall('/admin/auth/refresh', {
     method: 'POST',
     body: JSON.stringify({ refresh_token: refreshToken }),
@@ -46,4 +43,22 @@ export async function refreshTokens(
   if (status !== 200) return null;
   const data = (body as { data?: TokenPair })?.data;
   return data?.access_token && data?.refresh_token ? data : null;
+}
+
+// The API rotates refresh tokens single-use (old jti revoked on each refresh).
+// A dashboard load fires several proxy calls at once, so after the access token
+// expires they would all try to refresh the same cookie — the first wins and the
+// rest send a now-revoked token, wiping the session. Collapse concurrent
+// refreshes of the same token into one rotation so they all get the same pair.
+const inflightRefresh = new Map<string, Promise<TokenPair | null>>();
+
+/** Exchanges a refresh token for a fresh pair, or null if it is no longer valid. */
+export function refreshTokens(refreshToken: string): Promise<TokenPair | null> {
+  const existing = inflightRefresh.get(refreshToken);
+  if (existing) return existing;
+  const p = doRefresh(refreshToken).finally(() =>
+    inflightRefresh.delete(refreshToken),
+  );
+  inflightRefresh.set(refreshToken, p);
+  return p;
 }

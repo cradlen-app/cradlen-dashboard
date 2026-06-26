@@ -88,6 +88,15 @@ export interface OrganizationDetail extends OrganizationListItem {
   address: OrgAddress | null;
   recent_activity: OrgActivity[];
   portal: OrgPortal;
+  add_ons: SubscriptionAddOn[];
+}
+
+export interface SubscriptionAddOn {
+  name: string;
+  kind: string;
+  quantity: number;
+  unit_amount: number | null;
+  amount: number | null;
 }
 
 export interface SubscriptionListItem {
@@ -104,6 +113,7 @@ export interface SubscriptionListItem {
   currency: string | null;
   mrr: number | null;
   add_on_count: number;
+  add_ons: SubscriptionAddOn[];
 }
 
 export interface SubscriptionPlanOption {

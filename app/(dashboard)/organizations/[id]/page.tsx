@@ -148,6 +148,34 @@ export default function OrganizationDetailPage({
                 tone="secondary"
               />
             </div>
+
+            {data.add_ons.length > 0 && (
+              <div className="mt-5 border-t border-gray-100 pt-4">
+                <div className="text-xs font-medium uppercase tracking-wide text-gray-400">
+                  Add-ons
+                </div>
+                <div className="mt-2 space-y-1.5">
+                  {data.add_ons.map((a, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between gap-4 text-sm"
+                    >
+                      <span className="min-w-0 truncate text-brand-black">
+                        <span className="capitalize">
+                          {a.name.replace(/_/g, ' ')}
+                        </span>
+                        <span className="text-gray-400"> ×{a.quantity}</span>
+                      </span>
+                      <span className="shrink-0 font-medium text-brand-black">
+                        {a.amount != null
+                          ? formatCurrencyFull(a.amount, data.billing?.currency)
+                          : '—'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
 
           {/* Patient portal */}

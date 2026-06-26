@@ -20,12 +20,64 @@ export interface OrganizationListItem {
   subscription_status: string | null;
   plan: string | null;
   city: string | null;
+  specialty: string | null;
+  primary_contact_name: string | null;
+  primary_contact_email: string | null;
+  mrr: number | null;
+  branch_limit: number | null;
+  staff_limit: number | null;
+  created_at: string;
+}
+
+export interface OrgOwner {
+  full_name: string;
+  email: string | null;
+  phone: string | null;
+  specialty: string | null;
+}
+
+export interface OrgBilling {
+  amount: number;
+  currency: string;
+  interval: 'MONTHLY' | 'YEARLY';
+}
+
+export interface OrgPlanLimits {
+  max_branches: number;
+  max_staff: number;
+}
+
+export interface OrgBranch {
+  id: string;
+  name: string;
+  city: string;
+  governorate: string;
+  staff_count: number;
+  is_main: boolean;
+}
+
+export interface OrgAddress {
+  address: string;
+  governorate: string;
+  country: string | null;
+}
+
+export interface OrgActivity {
+  type: string;
+  title: string;
+  body: string;
   created_at: string;
 }
 
 export interface OrganizationDetail extends OrganizationListItem {
   subscription_ends_at: string | null;
   trial_ends_at: string | null;
+  owner: OrgOwner | null;
+  billing: OrgBilling | null;
+  plan_limits: OrgPlanLimits | null;
+  branches: OrgBranch[];
+  address: OrgAddress | null;
+  recent_activity: OrgActivity[];
 }
 
 export interface UserProfile {

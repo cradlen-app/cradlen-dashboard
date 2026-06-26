@@ -2,46 +2,37 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { getList, qs } from '@/lib/api';
-import type { PaymentListItem } from '@/lib/types';
-import { Card, PageHeader, StatusBadge, Spinner } from '@/components/ui';
-
-function useCount(path: string) {
-  return useQuery({
-    queryKey: ['count', path],
-    queryFn: async () => (await getList(path)).meta.total,
-  });
-}
-
-function Stat({
-  label,
-  value,
-  href,
-  tone,
-}: {
-  label: string;
-  value: number | undefined;
-  href: string;
-  tone?: string;
-}) {
-  return (
-    <Link href={href}>
-      <Card className="p-5 transition hover:shadow-md">
-        <div className="text-sm text-slate-500">{label}</div>
-        <div className={`mt-2 text-3xl font-semibold ${tone ?? ''}`}>
-          {value ?? '—'}
-        </div>
-      </Card>
-    </Link>
-  );
-}
+import {
+  AlertCircle,
+  ArrowRight,
+  Building2,
+  CheckCircle2,
+  LineChart,
+} from 'lucide-react';
+import { getList, getOne, qs } from '@/lib/api';
+import {
+  formatCurrencyFull,
+  formatCurrencyShort,
+  monthYear,
+  timeAgo,
+} from '@/lib/format';
+import type {
+  AdminMetricsOverview,
+  OrganizationListItem,
+  PaymentListItem,
+} from '@/lib/types';
+import { StatusBadge, Spinner } from '@/components/ui';
+import { Topbar } from '@/components/Topbar';
+import { StatCard } from '@/components/dashboard/StatCard';
+import { RevenueChart } from '@/components/dashboard/RevenueChart';
+import { PlanDistribution } from '@/components/dashboard/PlanDistribution';
+import { AvatarBadge } from '@/components/dashboard/AvatarBadge';
 
 export default function DashboardHome() {
-  const orgs = useCount('organizations' + qs({ limit: 1 }));
-  const users = useCount('users' + qs({ limit: 1 }));
-  const activeSubs = useCount(
-    'subscriptions' + qs({ status: 'ACTIVE', limit: 1 }),
-  );
+  const metricsQuery = useQuery({
+    queryKey: ['metrics-overview'],
+    queryFn: () => getOne<AdminMetricsOverview>('metrics/overview'),
+  });
   const pending = useQuery({
     queryKey: ['pending-payments'],
     queryFn: () =>
@@ -50,58 +41,190 @@ export default function DashboardHome() {
           qs({ status: 'AWAITING_VERIFICATION', limit: 5 }),
       ),
   });
+  const recent = useQuery({
+    queryKey: ['recent-orgs'],
+    queryFn: () =>
+      getList<OrganizationListItem>('organizations' + qs({ limit: 4 })),
+  });
+
+  const m = metricsQuery.data;
+  const currency = m?.currency ?? 'EGP';
 
   return (
     <div>
-      <PageHeader
+      <Topbar
         title="Overview"
-        subtitle="Platform-wide organizations, users, and billing."
+        subtitle="Platform health across all organizations"
       />
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Stat label="Organizations" value={orgs.data} href="/organizations" />
-        <Stat label="Users" value={users.data} href="/users" />
-        <Stat
+      {/* Stat cards */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Organizations"
+          value={m?.organizations_total ?? '—'}
+          sub={
+            m ? `+${m.organizations_added_this_month} this month` : undefined
+          }
+          subTone="text-brand-primary"
+          icon={Building2}
+          iconTone="bg-brand-primary/10 text-brand-primary"
+          href="/organizations"
+        />
+        <StatCard
           label="Active subscriptions"
-          value={activeSubs.data}
+          value={m?.active_subscriptions ?? '—'}
+          sub={
+            m
+              ? `${m.active_subscriptions} of ${m.organizations_total} orgs`
+              : undefined
+          }
+          icon={CheckCircle2}
+          iconTone="bg-brand-primary/10 text-brand-primary"
           href="/subscriptions"
         />
-        <Stat
-          label="Payments to verify"
-          value={pending.data?.meta.total}
+        <StatCard
+          label="Monthly recurring"
+          value={
+            m ? formatCurrencyShort(m.monthly_recurring_revenue, currency) : '—'
+          }
+          sub={
+            m?.mrr_change_pct != null
+              ? `▲ ${Math.abs(m.mrr_change_pct)}% MoM`
+              : undefined
+          }
+          subTone="text-brand-primary"
+          icon={LineChart}
+          iconTone="bg-brand-primary/10 text-brand-primary"
+          href="/subscriptions"
+        />
+        <StatCard
+          label="Awaiting payments"
+          value={m?.awaiting_payments_total ?? '—'}
+          sub="Needs your review"
+          subTone="text-red-500"
+          icon={AlertCircle}
+          iconTone="bg-red-50 text-red-500"
           href="/payments"
-          tone={pending.data?.meta.total ? 'text-amber-600' : ''}
         />
       </div>
 
-      <h2 className="mt-10 mb-3 text-lg font-semibold">
-        Payments awaiting verification
-      </h2>
-      <Card className="divide-y divide-slate-100">
-        {pending.isLoading ? (
-          <Spinner />
-        ) : !pending.data?.data.length ? (
-          <div className="px-5 py-10 text-center text-slate-400">
-            Nothing waiting. You&apos;re all caught up.
-          </div>
-        ) : (
-          pending.data.data.map((p) => (
+      {/* Revenue + plan distribution */}
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          {m ? (
+            <RevenueChart
+              history={m.revenue_history}
+              total={m.monthly_recurring_revenue}
+              changePct={m.mrr_change_pct}
+              currency={currency}
+            />
+          ) : (
+            <div className="rounded-2xl border border-gray-200 bg-white">
+              <Spinner />
+            </div>
+          )}
+        </div>
+        <PlanDistribution items={m?.plan_distribution ?? []} />
+      </div>
+
+      {/* Lists */}
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Payments awaiting verification */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-brand-black">
+                Payments awaiting verification
+              </h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Manual InstaPay &amp; wallet proofs needing review
+              </p>
+            </div>
             <Link
-              key={p.id}
-              href={`/payments/${p.id}`}
-              className="flex items-center justify-between px-5 py-3 hover:bg-slate-50"
+              href="/payments"
+              className="flex items-center gap-1 text-sm font-medium text-brand-black hover:text-brand-primary"
             >
-              <div>
-                <div className="font-medium">{p.organization_name}</div>
-                <div className="text-sm text-slate-500">
-                  {p.plan} · {p.amount} {p.currency} · {p.provider}
-                </div>
-              </div>
-              <StatusBadge status={p.status} />
+              View queue <ArrowRight className="size-4" />
             </Link>
-          ))
-        )}
-      </Card>
+          </div>
+
+          <div className="mt-4 divide-y divide-gray-100">
+            {pending.isLoading ? (
+              <Spinner />
+            ) : !pending.data?.data.length ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                Nothing waiting. You&apos;re all caught up.
+              </div>
+            ) : (
+              pending.data.data.map((p) => (
+                <Link
+                  key={p.id}
+                  href={`/payments/${p.id}`}
+                  className="flex items-center gap-3 py-3 transition-colors hover:bg-gray-50"
+                >
+                  <AvatarBadge name={p.organization_name} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-brand-black">
+                      {p.organization_name}
+                    </div>
+                    <div className="truncate text-xs text-gray-500">
+                      <span className="capitalize">{p.plan}</span>
+                      {p.reference ? ` · ref ${p.reference}` : ''}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-semibold text-brand-black">
+                      {formatCurrencyFull(Number(p.amount), p.currency)}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {timeAgo(p.created_at)}
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Recently added */}
+        <div className="rounded-2xl border border-gray-200 bg-white p-6">
+          <h2 className="text-base font-semibold text-brand-black">
+            Recently added
+          </h2>
+          <p className="mt-1 text-sm text-gray-500">Newest organizations</p>
+
+          <div className="mt-4 divide-y divide-gray-100">
+            {recent.isLoading ? (
+              <Spinner />
+            ) : !recent.data?.data.length ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                No organizations yet.
+              </div>
+            ) : (
+              recent.data.data.map((o) => (
+                <Link
+                  key={o.id}
+                  href={`/organizations/${o.id}`}
+                  className="flex items-center gap-3 py-3 transition-colors hover:bg-gray-50"
+                >
+                  <AvatarBadge name={o.name} />
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-brand-black">
+                      {o.name}
+                    </div>
+                    <div className="truncate text-xs text-gray-500">
+                      {[o.city, monthYear(o.created_at)]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </div>
+                  </div>
+                  <StatusBadge status={o.subscription_status ?? o.status} />
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -30,18 +30,25 @@ export function UserMenu() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2.5 rounded-xl border border-gray-200 bg-white py-1.5 pl-1.5 pr-2.5 transition-colors hover:bg-gray-50"
+        className="group flex h-10 items-center gap-2.5 rounded-full border border-transparent pl-1 pr-3 transition-colors hover:bg-brand-primary/8"
       >
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-primary text-xs font-semibold text-white">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-primary text-xs font-semibold text-white ring-2 ring-white">
           {initials(me?.full_name)}
         </span>
-        <span className="hidden text-left leading-tight sm:block">
-          <span className="block text-sm font-medium text-brand-black">
+        <span className="hidden flex-col items-start gap-0.5 leading-none sm:flex">
+          <span className="whitespace-nowrap text-sm text-brand-black transition-colors group-hover:text-brand-primary">
             {name}
           </span>
-          <span className="block text-xs text-gray-500">Platform admin</span>
+          <span className="whitespace-nowrap text-[11px] leading-none text-brand-primary/70">
+            Platform admin
+          </span>
         </span>
-        <ChevronDown className="size-4 text-gray-400" />
+        <ChevronDown
+          className={cn(
+            'size-4 shrink-0 text-gray-400 transition-transform duration-150',
+            open && 'rotate-180',
+          )}
+        />
       </button>
 
       {open && (
@@ -51,9 +58,9 @@ export function UserMenu() {
             onClick={() => setOpen(false)}
             aria-hidden
           />
-          <div className="absolute right-0 z-20 mt-2 w-64 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg">
-            <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-primary text-sm font-semibold text-white">
+          <div className="absolute right-0 z-20 mt-2 w-72 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-xl shadow-black/5">
+            <div className="flex items-center gap-3 border-b border-gray-100 bg-gradient-to-br from-brand-primary/10 via-brand-secondary/5 to-transparent px-4 py-4">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-brand-primary text-sm font-semibold text-white ring-2 ring-white">
                 {initials(me?.full_name)}
               </span>
               <div className="min-w-0">

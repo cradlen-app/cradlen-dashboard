@@ -1,50 +1,27 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
+import Link from 'next/link';
 import { NotificationBell } from '@/components/NotificationBell';
 import { UserMenu } from '@/components/UserMenu';
 
 export function AppHeader() {
-  const router = useRouter();
-  const [query, setQuery] = useState('');
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const q = query.trim();
-    router.push(
-      q ? `/organizations?search=${encodeURIComponent(q)}` : '/organizations',
-    );
-  }
-
   return (
-    <header className="flex h-16 shrink-0 items-center border-b border-gray-200 bg-white">
-      {/* Logo — aligned over the sidebar column */}
-      <div className="flex w-60 shrink-0 items-center px-5">
+    <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-gray-100 bg-white px-6">
+      <Link href="/" aria-label="Cradlen home" className="inline-flex shrink-0">
         <Image
           src="/Logo.png"
-          alt="Cradlen"
+          alt="CRADLEN"
           width={120}
           height={28}
           priority
           className="h-7 w-auto"
         />
-      </div>
+      </Link>
 
-      {/* Search + actions */}
-      <div className="flex flex-1 items-center justify-end gap-3 px-6">
-        <form onSubmit={onSubmit} className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search organizations, contacts…"
-            className="w-64 rounded-full border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm text-brand-black outline-none transition-colors placeholder:text-gray-400 focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/20 lg:w-80"
-          />
-        </form>
+      <div className="flex items-center gap-1">
         <NotificationBell />
+        <div className="mx-1.5 hidden h-5 w-px bg-gray-200 lg:block" />
         <UserMenu />
       </div>
     </header>

@@ -37,7 +37,7 @@ export function NotificationBell() {
       <button
         onClick={() => setOpen((o) => !o)}
         aria-label="Notifications"
-        className="relative flex size-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-brand-black transition-colors hover:bg-gray-50"
+        className="relative flex size-9 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-brand-primary/8 hover:text-brand-primary"
       >
         <Bell className="size-5" />
         {unread > 0 && (

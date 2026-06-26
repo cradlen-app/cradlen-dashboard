@@ -47,6 +47,21 @@ export async function postAction<T = unknown>(
   return (json as { data?: T })?.data as T;
 }
 
+/** PATCH a resource on the admin proxy and unwrap `{ data }`. */
+export async function patchAction<T = unknown>(
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const json = await parse(
+    await fetch(`/api/proxy/${path}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body ?? {}),
+    }),
+  );
+  return (json as { data?: T })?.data as T;
+}
+
 /** Build a `?key=value` query string from defined params. */
 export function qs(params: Record<string, string | number | undefined>): string {
   const sp = new URLSearchParams();

@@ -34,9 +34,9 @@ export default function DashboardLayout({
   if (isError || !data) return null;
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-[#f6f8f6]">
       <Sidebar me={data} />
-      <main className="flex-1 overflow-y-auto p-8">{children}</main>
+      <main className="flex-1 overflow-y-auto p-6 lg:p-8">{children}</main>
     </div>
   );
 }

@@ -19,6 +19,7 @@ export interface OrganizationListItem {
   staff_count: number;
   subscription_status: string | null;
   plan: string | null;
+  city: string | null;
   created_at: string;
 }
 
@@ -74,6 +75,7 @@ export interface PaymentListItem {
   plan: string;
   status: string;
   provider: string;
+  reference: string | null;
   amount: string;
   currency: string;
   verified_by_id: string | null;
@@ -95,5 +97,63 @@ export interface AuditLogEntry {
   target_id: string | null;
   before: unknown;
   after: unknown;
+  created_at: string;
+}
+
+export interface PlanDistributionItem {
+  plan: string;
+  count: number;
+}
+
+export interface RevenuePoint {
+  month: string; // 'YYYY-MM'
+  amount: number;
+}
+
+export interface AdminMetricsOverview {
+  organizations_total: number;
+  organizations_added_this_month: number;
+  active_subscriptions: number;
+  awaiting_payments_total: number;
+  currency: string;
+  monthly_recurring_revenue: number;
+  mrr_change_pct: number | null;
+  revenue_history: RevenuePoint[];
+  plan_distribution: PlanDistributionItem[];
+}
+
+export type AdminNotificationType =
+  | 'ORGANIZATION_CREATED'
+  | 'SUBSCRIPTION_STARTED'
+  | 'PLAN_CHANGED'
+  | 'PAYMENT_SUBMITTED';
+
+export interface AdminNotification {
+  id: string;
+  type: AdminNotificationType;
+  title: string;
+  body: string;
+  organization_id: string | null;
+  related_id: string | null;
+  is_read: boolean;
+  created_at: string;
+}
+
+export interface PlatformSettings {
+  instapay_handle: string | null;
+  wallet_number: string | null;
+  free_trial_days: number;
+  auto_verify_gateway_payments: boolean;
+  default_currency: string;
+}
+
+/** Mirrors the cradlen-api AdminResponseDto (status is derived, not a role). */
+export type AdminAccountStatus = 'ACTIVE' | 'PENDING' | 'DISABLED';
+
+export interface AdminTeamMember {
+  id: string;
+  email: string;
+  full_name: string;
+  status: AdminAccountStatus;
   created_at: string;
 }

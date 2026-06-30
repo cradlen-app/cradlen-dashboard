@@ -10,6 +10,7 @@ import { Spinner } from '@/components/ui';
 import { Modal } from '@/components/Modal';
 import { Topbar } from '@/components/Topbar';
 import { AvatarBadge } from '@/components/dashboard/AvatarBadge';
+import { PushNotificationsCard } from '@/components/PushNotificationsCard';
 
 const CURRENCIES: Record<string, string> = {
   EGP: 'EGP — Egyptian Pound',
@@ -157,6 +158,9 @@ export default function SettingsPage() {
             </DefaultRow>
           </div>
         </section>
+
+        {/* Push notifications */}
+        <PushNotificationsCard />
 
         {/* Admin team */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6">

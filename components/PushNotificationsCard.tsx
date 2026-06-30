@@ -78,7 +78,7 @@ export function PushNotificationsCard() {
         keys: { p256dh: string; auth: string };
       };
       try {
-        await postAction('admin/push/subscribe', {
+        await postAction('push/subscribe', {
           endpoint: json.endpoint,
           keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
         });
@@ -106,7 +106,7 @@ export function PushNotificationsCard() {
         // Best-effort server cleanup — tolerate a missing/unreachable endpoint
         // (e.g. push not deployed) so turning push off never gets stuck. The
         // backend prunes dead endpoints on its next send anyway.
-        await postAction('admin/push/unsubscribe', {
+        await postAction('push/unsubscribe', {
           endpoint: sub.endpoint,
         }).catch(() => undefined);
         await sub.unsubscribe();

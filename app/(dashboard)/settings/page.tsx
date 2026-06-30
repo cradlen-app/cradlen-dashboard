@@ -6,7 +6,7 @@ import { UserPlus } from 'lucide-react';
 import { getList, getOne, patchAction, postAction } from '@/lib/api';
 import { cn } from '@/lib/cn';
 import type { AdminTeamMember, PlatformSettings } from '@/lib/types';
-import { Spinner } from '@/components/ui';
+import { Spinner, Switch } from '@/components/ui';
 import { Modal } from '@/components/Modal';
 import { Topbar } from '@/components/Topbar';
 import { AvatarBadge } from '@/components/dashboard/AvatarBadge';
@@ -126,8 +126,9 @@ export default function SettingsPage() {
               hint="Manual proofs always need review"
             >
               {s ? (
-                <Toggle
-                  on={s.auto_verify_gateway_payments}
+                <Switch
+                  checked={s.auto_verify_gateway_payments}
+                  aria-label="Auto-verify gateway payments"
                   onChange={(v) =>
                     save.mutate({ auto_verify_gateway_payments: v })
                   }
@@ -428,29 +429,3 @@ function NumberEditor({
   );
 }
 
-function Toggle({
-  on,
-  onChange,
-}: {
-  on: boolean;
-  onChange: (value: boolean) => void;
-}) {
-  return (
-    <button
-      role="switch"
-      aria-checked={on}
-      onClick={() => onChange(!on)}
-      className={cn(
-        'relative h-6 w-11 shrink-0 rounded-full transition-colors',
-        on ? 'bg-brand-primary' : 'bg-gray-300',
-      )}
-    >
-      <span
-        className={cn(
-          'absolute top-0.5 size-5 rounded-full bg-white transition-transform',
-          on ? 'translate-x-5' : 'translate-x-0.5',
-        )}
-      />
-    </button>
-  );
-}

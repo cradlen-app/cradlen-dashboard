@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { BellRing } from 'lucide-react';
 import { postAction } from '@/lib/api';
-import { cn } from '@/lib/cn';
+import { Switch } from '@/components/ui';
 
 const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
@@ -77,10 +77,17 @@ export function PushNotificationsCard() {
         endpoint: string;
         keys: { p256dh: string; auth: string };
       };
-      await postAction('admin/push/subscribe', {
-        endpoint: json.endpoint,
-        keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
-      });
+      try {
+        await postAction('admin/push/subscribe', {
+          endpoint: json.endpoint,
+          keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
+        });
+      } catch (serverError) {
+        // The browser subscription was created before the server registered it;
+        // roll it back so we don't leave an orphan the backend never knows about.
+        await sub.unsubscribe().catch(() => undefined);
+        throw serverError;
+      }
       setSubscribed(true);
     } catch {
       setError('Could not enable push notifications. Please try again.');
@@ -96,7 +103,12 @@ export function PushNotificationsCard() {
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
       if (sub) {
-        await postAction('admin/push/unsubscribe', { endpoint: sub.endpoint });
+        // Best-effort server cleanup — tolerate a missing/unreachable endpoint
+        // (e.g. push not deployed) so turning push off never gets stuck. The
+        // backend prunes dead endpoints on its next send anyway.
+        await postAction('admin/push/unsubscribe', {
+          endpoint: sub.endpoint,
+        }).catch(() => undefined);
         await sub.unsubscribe();
       }
       setSubscribed(false);
@@ -126,23 +138,14 @@ export function PushNotificationsCard() {
         </div>
 
         {status === 'ready' && (
-          <button
-            role="switch"
-            aria-checked={subscribed}
-            disabled={busy}
-            onClick={subscribed ? disable : enable}
-            className={cn(
-              'relative mt-1 h-6 w-11 shrink-0 rounded-full transition-colors disabled:opacity-50',
-              subscribed ? 'bg-brand-primary' : 'bg-gray-300',
-            )}
-          >
-            <span
-              className={cn(
-                'absolute top-0.5 size-5 rounded-full bg-white transition-transform',
-                subscribed ? 'translate-x-5' : 'translate-x-0.5',
-              )}
+          <div className="mt-1">
+            <Switch
+              checked={subscribed}
+              disabled={busy}
+              aria-label="Push notifications"
+              onChange={(next) => (next ? enable() : disable())}
             />
-          </button>
+          </div>
         )}
       </div>
 

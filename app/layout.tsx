@@ -13,6 +13,11 @@ export const metadata: Metadata = {
     title: 'Cradlen Admin',
   },
   icons: {
+    icon: [
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon.png', sizes: '256x256', type: 'image/png' },
+    ],
+    shortcut: '/icon.png',
     apple: '/apple-touch-icon.png',
   },
 };

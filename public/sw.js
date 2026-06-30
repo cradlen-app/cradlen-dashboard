@@ -11,7 +11,7 @@
  * misleading and a security risk.
  */
 
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `cradlen-admin-${VERSION}`;
 const OFFLINE_URL = '/offline';
 
@@ -54,6 +54,53 @@ self.addEventListener('activate', (event) => {
 // Lets the page tell a waiting worker to take over immediately (update flow).
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
+});
+
+// --- Web Push ---------------------------------------------------------------
+// Payload shape (from cradlen-api AdminPushService): { title, body, url }.
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { title: 'Cradlen Admin', body: event.data ? event.data.text() : '' };
+  }
+  const title = data.title || 'Cradlen Admin';
+  const options = {
+    body: data.body || '',
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+    data: { url: data.url || '/' },
+  };
+  event.waitUntil(self.registration.showNotification(title, options));
+});
+
+// Focus an existing admin tab (navigating it to the deep link) or open a new one.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(
+    (async () => {
+      const clientsArr = await self.clients.matchAll({
+        type: 'window',
+        includeUncontrolled: true,
+      });
+      for (const client of clientsArr) {
+        if ('focus' in client) {
+          await client.focus();
+          if ('navigate' in client) {
+            try {
+              await client.navigate(url);
+            } catch {
+              /* cross-origin or detached; ignore */
+            }
+          }
+          return;
+        }
+      }
+      if (self.clients.openWindow) await self.clients.openWindow(url);
+    })(),
+  );
 });
 
 function isStaticAsset(url) {

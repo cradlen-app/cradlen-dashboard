@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { InstallPrompt } from '@/components/InstallPrompt';
 import { NotificationBell } from '@/components/NotificationBell';
 import { UserMenu } from '@/components/UserMenu';
 
@@ -20,6 +21,7 @@ export function AppHeader() {
       </Link>
 
       <div className="flex items-center gap-1">
+        <InstallPrompt />
         <NotificationBell />
         <div className="mx-1.5 hidden h-5 w-px bg-gray-200 lg:block" />
         <div className="hidden lg:block">
